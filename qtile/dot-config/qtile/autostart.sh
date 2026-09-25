@@ -2,6 +2,7 @@
 picom &
 dunst &
 nm-applet &
+flameshot &
 blueman-applet &
 /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 &
 xss-lock --transfer-sleep-lock -- ~/.config/qtile/lock.sh &

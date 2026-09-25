@@ -52,11 +52,31 @@ keys = [
     Key([], "XF86MonBrightnessDown", lazy.spawn("brightnessctl set 5%-")),
 ]
 
-groups = [Group(i) for i in "123456789"]
-for g in groups:
+# Workspaces span both monitors: workspace 1 is group "1a" on the main monitor
+# and "1b" on the second, and Super + 1 switches both at once.
+# With one monitor (the ThinkPad on its own) only the "a" set is used.
+workspaces = "123456789"
+monitors = "ab"            # one letter per monitor; add "c" for a third
+groups = [Group(n + m, label=n, screen_affinity=i)
+          for n in workspaces for i, m in enumerate(monitors)]
+
+
+def go_to(qtile, n):
+    for i in range(min(len(qtile.screens), len(monitors))):
+        qtile.groups_map[n + monitors[i]].toscreen(i)
+
+
+def send_to(qtile, n):
+    win = qtile.current_window
+    if win:
+        win.togroup(n + monitors[qtile.current_screen.index])   # stays on its monitor
+    go_to(qtile, n)
+
+
+for n in workspaces:
     keys += [
-        Key([mod], g.name, lazy.group[g.name].toscreen()),
-        Key([mod, "shift"], g.name, lazy.window.togroup(g.name, switch_group=True)),
+        Key([mod], n, lazy.function(go_to, n)),
+        Key([mod, "shift"], n, lazy.function(send_to, n)),
     ]
 
 borders = dict(border_width=2, margin=6,
@@ -76,17 +96,20 @@ widget_defaults = dict(font="JetBrainsMono Nerd Font", fontsize=font_size, paddi
                        background=c["bg"], foreground=c["fg"])
 extension_defaults = widget_defaults.copy()
 
+
 def sep():
     # thin, short divider between widgets
     return widget.Sep(linewidth=1, padding=8, size_percent=50, foreground=c["comment"])
 
-def status_widgets():
+
+def status_widgets(s):   # s = monitor number, 0 = main
     w = [
         widget.GroupBox(highlight_method="line", highlight_color=[c["bg"], c["bg"]],
                         this_current_screen_border=c["blue"], this_screen_border=c["comment"],
                         other_current_screen_border=c["magenta"], other_screen_border=c["comment"],
                         active=c["fg"], inactive=c["comment"],
-                        urgent_border=c["red"], urgent_text=c["red"], disable_drag=True),
+                        urgent_border=c["red"], urgent_text=c["red"], disable_drag=True,
+                        visible_groups=[n + monitors[s] for n in workspaces]),   # this monitor's 1-9
         widget.CurrentLayout(foreground=c["cyan"]),
         sep(),
         # window icons only; click one to focus it
@@ -117,13 +140,14 @@ def status_widgets():
                       volume_down_command="wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-",
                       volume_app="pavucontrol"),
         sep(),
-        widget.Systray(),
-        sep(),
+        *([widget.Systray(), sep()] if s == 0 else []),   # only one tray allowed: main monitor
         widget.Clock(format="%a %d %b  %H:%M", foreground=c["blue"]),
     ]
     return w
 
-screens = [Screen(top=bar.Bar(status_widgets(), bar_height, background=c["bg"], margin=[6, 6, 0, 6]))]
+
+screens = [Screen(top=bar.Bar(status_widgets(s), bar_height, background=c["bg"], margin=[6, 6, 0, 6]))
+           for s in range(len(monitors))]   # one bar per monitor
 
 mouse = [
     Drag([mod], "Button1", lazy.window.set_position_floating(), start=lazy.window.get_position()),
@@ -137,6 +161,7 @@ cursor_warp = False
 auto_fullscreen = True           # games go fullscreen properly
 focus_on_window_activation = "smart"
 wmname = "LG3D"                  # fixes some Java apps
+
 
 @hook.subscribe.startup_once
 def autostart():
