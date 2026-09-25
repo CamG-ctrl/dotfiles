@@ -34,7 +34,7 @@ keys = [
     Key([mod], "n", lazy.layout.normalize()),
     Key([mod], "Return", lazy.spawn(terminal)),
     Key([mod], "d", lazy.spawn("rofi -show drun")),
-    Key([mod, "shift"], "p", lazy.spawn("rofi -show power-menu")),
+    Key([mod, "shift"], "q", lazy.spawn("/home/cam/.config/rofi/powermenu.sh", shell=True)),
     Key([mod], "e", lazy.spawn("thunar")),
     Key([mod], "b", lazy.spawn("firefox")),
     Key([mod], "p", lazy.spawn("flameshot gui")),

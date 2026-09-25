@@ -2,6 +2,7 @@
 [[ $- != *i* ]] && return
 export BAT_THEME=tokyonight_night
 export PATH=$PATH:~/bash-project
+export PATH=$PATH:~/.local/bin
 source ~/.local/share/tokyonight/extras/fzf/tokyonight_night.sh
 
 alias ls='eza -la --color=always --icons=auto'
