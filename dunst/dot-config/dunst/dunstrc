@@ -1,0 +1,8 @@
+[global]
+    font = JetBrainsMono Nerd Font 12
+    origin = top-right
+    offset = (12, 44)
+    frame_width = 2
+    corner_radius = 6
+    icon_theme = Papirus-Dark
+    enable_recursive_icon_lookup = true
